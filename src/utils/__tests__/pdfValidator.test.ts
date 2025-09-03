@@ -41,13 +41,13 @@ describe('pdfValidator', () => {
     })
 
     it('ファイルサイズが大きすぎる場合はエラーメッセージを返す', () => {
-      // 10MB以上のファイルサイズをシミュレート
-      const largeContent = new Array(10 * 1024 * 1024 + 1).fill('a').join('')
+      // 20MB以上のファイルサイズをシミュレート
+      const largeContent = new Array(20 * 1024 * 1024 + 1).fill('a').join('')
       const largeFile = new File([largeContent], 'large.pdf', { type: 'application/pdf' })
       const result = validatePdfFile(largeFile)
       
       expect(result.isValid).toBe(false)
-      expect(result.error).toBe('ファイルサイズは10MB以下にしてください')
+      expect(result.error).toBe('ファイルサイズは20MB以下にしてください')
     })
 
     it('空のファイルの場合はエラーメッセージを返す', () => {

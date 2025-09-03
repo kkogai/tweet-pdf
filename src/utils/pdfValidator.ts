@@ -24,12 +24,12 @@ export function validatePdfFile(file: File): PdfValidationResult {
     }
   }
 
-  // ファイルサイズが10MB以下かチェック
-  const maxSize = 10 * 1024 * 1024 // 10MB
+  // ファイルサイズが20MB以下かチェック
+  const maxSize = 20 * 1024 * 1024 // 20MB
   if (file.size > maxSize) {
     return {
       isValid: false,
-      error: 'ファイルサイズは10MB以下にしてください'
+      error: 'ファイルサイズは20MB以下にしてください'
     }
   }
 

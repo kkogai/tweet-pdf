@@ -16,9 +16,9 @@ export async function extractTextFromPdf(file: File): Promise<PDFParseResult> {
     // 動的にPDF.jsをインポート（SSR対応）
     const pdfjs = await import('pdfjs-dist')
     
-    // PDF.js worker を設定
+    // PDF.js worker を設定（unpkg CDN使用）
     if (typeof window !== 'undefined') {
-      pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+      pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
     }
     
     // ファイルをArrayBufferに変換

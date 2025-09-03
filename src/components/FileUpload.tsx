@@ -12,20 +12,41 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isProcessingFile, setIsProcessingFile] = useState(false)
 
   const handleFileSelect = useCallback((file: File) => {
+    // 重複処理防止 - より確実な方法
+    if (isProcessingFile || isUploading) {
+      console.log('Already processing, skipping...')
+      return
+    }
+
+    // 同じファイル名の重複処理防止
+    if (selectedFile && selectedFile.name === file.name && selectedFile.size === file.size) {
+      console.log('Same file already selected, skipping...')
+      return
+    }
+
+    setIsProcessingFile(true)
+    
     const validation = validatePdfFile(file)
     
     if (!validation.isValid) {
       setError(validation.error || 'ファイルの検証に失敗しました')
       setSelectedFile(null)
+      setIsProcessingFile(false)
       return
     }
 
     setError(null)
     setSelectedFile(file)
-    onFileUpload(file)
-  }, [onFileUpload])
+    
+    // 非同期でファイル処理を呼び出し
+    requestAnimationFrame(() => {
+      onFileUpload(file)
+      setTimeout(() => setIsProcessingFile(false), 2000)
+    })
+  }, [onFileUpload, isProcessingFile, isUploading, selectedFile])
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -59,6 +80,8 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
     const files = e.target.files
     if (files && files.length > 0) {
       handleFileSelect(files[0])
+      // 同じファイルを再選択可能にするためinputをリセット
+      e.target.value = ''
     }
   }, [handleFileSelect])
 
@@ -107,7 +130,7 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
             <p className="text-lg font-medium text-gray-900">PDFファイルをドラッグ&ドロップ</p>
             <p className="text-sm text-gray-500">またはクリックしてファイルを選択</p>
           </div>
-          <p className="text-xs text-gray-400">最大10MB</p>
+          <p className="text-xs text-gray-400">最大20MB</p>
         </div>
       </div>
 
