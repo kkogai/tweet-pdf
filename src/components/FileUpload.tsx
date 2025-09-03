@@ -15,18 +15,22 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
   const [isProcessingFile, setIsProcessingFile] = useState(false)
 
   const handleFileSelect = useCallback((file: File) => {
-    // 重複処理防止 - より確実な方法
+    // 重複処理防止
     if (isProcessingFile || isUploading) {
       console.log('Already processing, skipping...')
       return
     }
 
-    // 同じファイル名の重複処理防止
-    if (selectedFile && selectedFile.name === file.name && selectedFile.size === file.size) {
+    // 同じファイルの重複処理防止
+    if (selectedFile && 
+        selectedFile.name === file.name && 
+        selectedFile.size === file.size && 
+        selectedFile.lastModified === file.lastModified) {
       console.log('Same file already selected, skipping...')
       return
     }
 
+    console.log('Processing new file:', file.name)
     setIsProcessingFile(true)
     
     const validation = validatePdfFile(file)
@@ -41,11 +45,13 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
     setError(null)
     setSelectedFile(file)
     
-    // 非同期でファイル処理を呼び出し
-    requestAnimationFrame(() => {
-      onFileUpload(file)
-      setTimeout(() => setIsProcessingFile(false), 2000)
-    })
+    // ファイル処理を呼び出し
+    onFileUpload(file)
+    
+    // 処理フラグをリセット
+    setTimeout(() => {
+      setIsProcessingFile(false)
+    }, 1000)
   }, [onFileUpload, isProcessingFile, isUploading, selectedFile])
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -111,7 +117,12 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onClick={() => document.getElementById('file-input')?.click()}
+        onClick={() => {
+          const fileInput = document.getElementById('file-input') as HTMLInputElement
+          if (fileInput && !isProcessingFile && !isUploading) {
+            fileInput.click()
+          }
+        }}
       >
         <input
           id="file-input"
@@ -119,7 +130,8 @@ export function FileUpload({ onFileUpload, isUploading = false }: FileUploadProp
           type="file"
           accept=".pdf,application/pdf"
           onChange={handleInputChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="hidden"
+          onClick={(e) => e.stopPropagation()}
         />
         
         <div className="space-y-2">

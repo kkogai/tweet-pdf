@@ -2,11 +2,12 @@
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
-  basePath: '/tweet-pdf',
-  assetPrefix: '/tweet-pdf',
+  basePath: process.env.NODE_ENV === 'production' ? '/tweet-pdf' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/tweet-pdf' : '',
   images: {
     unoptimized: true
-  }
+  },
+  reactStrictMode: false,
 }
 
 module.exports = nextConfig

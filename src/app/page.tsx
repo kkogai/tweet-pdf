@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileUpload } from '@/components/FileUpload'
 import { TweetTimeline } from '@/components/TweetTimeline'
 import { extractTextFromPdf, PDFPage } from '@/utils/pdfParser'
@@ -121,32 +121,36 @@ export default function Home() {
             {/* Twitter風タイムライン */}
             <TweetTimeline pages={pages} />
           </div>
-        ) : (
+        ) : error ? (
           <div className="space-y-6">
             {/* エラー時の表示 */}
-            {error && (
-              <div className="max-w-2xl mx-auto">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center mb-3">
-                    <svg className="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-sm font-medium text-red-800">{error}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setError(null)
-                      setHasAttemptedUpload(false)
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    別のファイルを試す
-                  </button>
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center mb-3">
+                  <svg className="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-sm font-medium text-red-800">{error}</p>
                 </div>
+                <button
+                  onClick={() => {
+                    setError(null)
+                    setHasAttemptedUpload(false)
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  別のファイルを試す
+                </button>
               </div>
-            )}
+            </div>
+            
+            {/* エラー後もファイルアップロードを表示 */}
+            <FileUpload
+              onFileUpload={handleFileUpload}
+              isUploading={isProcessing}
+            />
           </div>
-        )}
+        ) : null}
       </main>
 
       {/* フッター */}
