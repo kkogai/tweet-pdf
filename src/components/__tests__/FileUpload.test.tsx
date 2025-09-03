@@ -2,6 +2,16 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FileUpload } from '../FileUpload'
 
+// Mock console to avoid warnings
+const originalConsoleWarn = console.warn
+beforeAll(() => {
+  console.warn = jest.fn()
+})
+
+afterAll(() => {
+  console.warn = originalConsoleWarn
+})
+
 describe('FileUpload', () => {
   const mockOnFileUpload = jest.fn()
 
@@ -33,9 +43,12 @@ describe('FileUpload', () => {
     render(<FileUpload onFileUpload={mockOnFileUpload} />)
     
     const input = screen.getByTestId('file-input')
-    await userEvent.upload(input, file)
+    fireEvent.change(input, { target: { files: [file] } })
     
-    expect(screen.getByText('PDFファイルのみアップロード可能です')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('PDFファイルのみアップロード可能です')).toBeInTheDocument()
+    })
+    
     expect(mockOnFileUpload).not.toHaveBeenCalled()
   })
 
