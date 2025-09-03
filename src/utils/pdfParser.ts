@@ -1,4 +1,6 @@
 // PDF.js動的インポート（SSR対応）
+import type { PDFPageProxy, TextItem } from 'pdfjs-dist/types/src/display/api'
+import type { PageViewport } from 'pdfjs-dist/types/src/display/display_utils'
 
 export interface PDFContentItem {
   type: 'text' | 'image'
@@ -60,7 +62,7 @@ function splitTextIntoChunks(text: string): string[] {
 }
 
 // 画像を抽出する関数
-async function extractImagesFromPage(page: any, viewport: any): Promise<string[]> {
+async function extractImagesFromPage(page: PDFPageProxy, viewport: PageViewport): Promise<string[]> {
   try {
     // ページを Canvas にレンダリングして視覚的な内容を取得
     const canvas = document.createElement('canvas')
@@ -71,6 +73,7 @@ async function extractImagesFromPage(page: any, viewport: any): Promise<string[]
     const renderContext = {
       canvasContext: context,
       viewport: viewport,
+      canvas: canvas
     }
 
     // ページをcanvasにレンダリング
@@ -130,8 +133,8 @@ export async function extractTextFromPdf(file: File): Promise<PDFParseResult> {
         
         // テキストアイテムを結合
         const fullText = textContent.items
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((item: any) => (item as { str: string }).str)
+          .filter((item): item is TextItem => 'str' in item)
+          .map(item => item.str)
           .join('')
         
         // 画像を抽出（エラーが発生しても処理を続行）

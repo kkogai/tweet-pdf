@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { FileUpload } from '@/components/FileUpload'
 import { TweetTimeline } from '@/components/TweetTimeline'
 import { extractTextFromPdf, PDFPage } from '@/utils/pdfParser'
