@@ -1,13 +1,39 @@
-import { extractTextFromPdf, PDFParseResult } from '../pdfParser'
+import { extractTextFromPdf } from '../pdfParser'
 
 // Mock PDF.js
 jest.mock('pdfjs-dist', () => ({
-  getDocument: jest.fn()
+  getDocument: jest.fn(),
+  GlobalWorkerOptions: {},
+  version: '3.11.174'
 }))
 
-const mockPdfJs = require('pdfjs-dist')
+import * as mockPdfJs from 'pdfjs-dist'
+
+// Mock File.arrayBuffer for testing
+const createMockFile = (content: string, name: string, type: string) => {
+  const file = new File([content], name, { type })
+  
+  // arrayBuffer メソッドをモック
+  Object.defineProperty(file, 'arrayBuffer', {
+    value: jest.fn().mockResolvedValue(new ArrayBuffer(content.length)),
+    writable: true
+  })
+  
+  return file
+}
 
 describe('pdfParser', () => {
+  // Suppress console.error during tests
+  const originalConsoleError = console.error
+  
+  beforeAll(() => {
+    console.error = jest.fn()
+  })
+  
+  afterAll(() => {
+    console.error = originalConsoleError
+  })
+  
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -35,7 +61,7 @@ describe('pdfParser', () => {
         promise: Promise.resolve(mockPdf)
       })
 
-      const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
+      const file = createMockFile('test', 'test.pdf', 'application/pdf')
       const result = await extractTextFromPdf(file)
 
       expect(result.success).toBe(true)
@@ -68,7 +94,7 @@ describe('pdfParser', () => {
         promise: Promise.resolve(mockPdf)
       })
 
-      const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
+      const file = createMockFile('test', 'test.pdf', 'application/pdf')
       const result = await extractTextFromPdf(file)
 
       expect(result.success).toBe(true)
@@ -95,7 +121,7 @@ describe('pdfParser', () => {
         promise: Promise.resolve(mockPdf)
       })
 
-      const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
+      const file = createMockFile('test', 'test.pdf', 'application/pdf')
       const result = await extractTextFromPdf(file)
 
       expect(result.success).toBe(true)
@@ -104,11 +130,15 @@ describe('pdfParser', () => {
     })
 
     it('PDFの読み込みに失敗した場合はエラーを返す', async () => {
+      const rejectedPromise = Promise.reject(new Error('Invalid PDF'))
+      // エラーのスタックトレースを避けるため、catch を追加
+      rejectedPromise.catch(() => {})
+      
       mockPdfJs.getDocument.mockReturnValue({
-        promise: Promise.reject(new Error('Invalid PDF'))
+        promise: rejectedPromise
       })
 
-      const file = new File(['invalid'], 'invalid.pdf', { type: 'application/pdf' })
+      const file = createMockFile('invalid', 'invalid.pdf', 'application/pdf')
       const result = await extractTextFromPdf(file)
 
       expect(result.success).toBe(false)
@@ -125,7 +155,7 @@ describe('pdfParser', () => {
         promise: Promise.resolve(mockPdf)
       })
 
-      const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
+      const file = createMockFile('test', 'test.pdf', 'application/pdf')
       const result = await extractTextFromPdf(file)
 
       expect(result.success).toBe(false)
@@ -146,7 +176,7 @@ describe('pdfParser', () => {
         promise: Promise.resolve(mockPdf)
       })
 
-      const file = new File(['test'], 'test.pdf', { type: 'application/pdf' })
+      const file = createMockFile('test', 'test.pdf', 'application/pdf')
       const result = await extractTextFromPdf(file)
 
       expect(result.success).toBe(false)
